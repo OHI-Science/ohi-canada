@@ -5,7 +5,7 @@ require(methods)
 require(ohicore)
 
 # populate CHONe folder and modify layers and functions
-setwd('~/GitHub/ohi-global')
+setwd('~/GitHub/ohi-canada')
 #delete
 unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
 unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
@@ -22,7 +22,7 @@ fl=list.files('eez2013/spatial')
 file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep = ""), overwrite = T)
 
 #modify
-setwd('~/GitHub/ohi-global/eez2013')
+setwd('~/GitHub/ohi-canada/eez2013')
 #source("../layers_Canada-CHONe2014.R")
 
 # calculate

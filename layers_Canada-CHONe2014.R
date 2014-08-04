@@ -1,7 +1,7 @@
 library(plyr)
 library(dplyr)
 
-wd = '~/GitHub/ohi-global/eezCHONE'
+wd = '~/GitHub/ohi-canada/eezCHONE'
 #wd = '/Users/bbest/Github_Mac/ohicore_Canada-CHONe/inst/extdata'
 setwd(wd)
 
@@ -13,7 +13,7 @@ trend=read.csv('layers/hab_trend.csv', na.strings='', stringsAsFactors=F);head(t
 
 # inject permafrost and clathrates
 #presence
-newpres=data.frame(cbind(rgn_id=1:278,habitat=rep(c('clathrates','permafrost'),each=278),boolean=0))
+newpres=data.frame(cbind(rgn_id=1:278,habitat=rep(c('clathrates','permafrost'),each=278),boolean=0),stringsAsFactors = F)
 newpres$boolean[newpres$rgn_id==218]=1
 pres=rbind(pres,newpres)
 
