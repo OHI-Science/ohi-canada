@@ -25,23 +25,29 @@ Setup = function(){
     x = read.csv(csv, check.names=F)
     
     # custom modifications
-    if (step=='3-m-melt'){ x$year = factor(x$year, levels=levels(o$year)) } # [1] "Component “year”: 'current' is not a factor"
+    if (step=="1-rky"){x = x %.% arrange(rgn_id, species)}
+    if (step=="2-rky-smooth"){x = x %.% arrange(rgn_id, species)}
+    if (step=='3-m-melt'){ x$year = factor(x$year, levels=levels(o$year))
+                           x = x %.%
+                             arrange(rgn_id, species)} # [1] "Component “year”: 'current' is not a factor"
+    if (step=="4-m-within"){x = x %.% arrange(rgn_id, species)}
+    if (step=="5-m-merge"){x = x %.% arrange(rgn_id, species, species_code)}
     if (step=='7-ref95pct-quantile'){ x = setNames(as.numeric(x), '95%') }
     
-    eq = all.equal(o, x)
-    if (class(eq) == 'character'){
-      csv = sprintf('%s_%s_A.csv', prefix, step)
-      cat(sprintf('DEBUG: NOT EQUAL! writing %s.\n', csv))
-      print(eq)
-      write.csv(o, csv, row.names=F, na='') 
-    }
+
+#     eq = all.equal(o, x)
+#     if (class(eq) == 'character'){
+#       csv = sprintf('%s_%s_A.csv', prefix, step)
+#       cat(sprintf('DEBUG: NOT EQUAL! writing %s.\n', csv))
+#       print(eq)
+#       write.csv(o, csv, row.names=F, na='') 
+#     }
     return(x)
   }
   
 }
 
-FIS = function(layers, status_year=2011){
-  #browser()
+ FIS = function(layers, status_year=2011){
   # layers used: fis_meancatch, fis_b_bmsy, fis_proparea_saup2rgn
       
   # catch data
@@ -235,7 +241,6 @@ FIS = function(layers, status_year=2011){
 
 MAR = function(layers, status_years=2005:2011){  
   # layers used: mar_harvest_tonnes, mar_harvest_species, mar_sustainability_score, mar_coastalpopn_inland25mi, mar_trend_years
-  
   harvest_tonnes = rename(
     SelectLayersData(layers, layers='mar_harvest_tonnes', narrow=T),
     c('id_num'='rgn_id', 'category'='species_code', 'year'='year', 'val_num'='tonnes'))
@@ -261,9 +266,10 @@ MAR = function(layers, status_years=2005:2011){
   rky = harvest_tonnes %.%
     merge(harvest_species     , all.x=TRUE, by='species_code') %.%
     merge(sustainability_score, all.x=TRUE, by=c('rgn_id', 'species')) %.%
-    dcast(rgn_id + species + species_code + sust_coeff ~ year, value.var='tonnes', mean, na.rm=T)
+    dcast(rgn_id + species + species_code + sust_coeff ~ year, value.var='tonnes', mean, na.rm=T) %.%
+    arrange(rgn_id, species)
     
-  x = csv_compare(rky, '1-rky')
+#   x = csv_compare(rky, '1-rky') # DEBUG
   
   # smooth each species-country time-series using a running mean with 4-year window, excluding NAs from the 4-year mean calculation
   # TODO: simplify below with dplyr::group_by()
@@ -272,13 +278,15 @@ MAR = function(layers, status_years=2005:2011){
   rownames(rky_smooth) = as.character(yrs_smooth)
   rky_smooth = t(rky_smooth)
   rky = as.data.frame(cbind(rky[, c('rgn_id','species','species_code','sust_coeff')], rky_smooth)); head(rky)
-  x = csv_compare(rky, '2-rky-smooth')  # DEBUG
+#   x = csv_compare(rky, '2-rky-smooth')  # DEBUG
     
   # melt
   m = melt(rky,
            id=c('rgn_id', 'species', 'species_code', 'sust_coeff'),
            variable.name='year', value.name='sm_tonnes'); head(m)
-  x = csv_compare(m, '3-m-melt')  # DEBUG
+#   m <- m %.%
+#     arrange(rgn_id, species)
+#   x = csv_compare(m, '3-m-melt')  # DEBUG
   # "Component “year”: 'current' is not a factor"
     
   # for each species-country-year, smooth mariculture harvest times the sustainability coefficient
@@ -286,11 +294,15 @@ MAR = function(layers, status_years=2005:2011){
     sust_tonnes = sust_coeff * sm_tonnes
     year        = as.numeric(as.character(m$year))
   })
-  x = csv_compare(m, '4-m-within')  # DEBUG
+#   m <- m %.%
+#     arrange(rgn_id, species)
+#   x = csv_compare(m, '4-m-within')  # DEBUG
   
-  # merge the MAR and coastal human population data
+  # merge the MAR and coastal human population data   
   m = merge(m, popn_inland25mi, by=c('rgn_id','year'), all.x=T)
-  m_a = csv_compare(m, '5-m-merge')  # DEBUG
+#   m <- m %.%
+#     arrange(rgn_id, species, species_code)
+#   m_a = csv_compare(m, '5-m-merge')  # DEBUG
   
   # must first aggregate all weighted timeseries per region, before dividing by total population
 #   ry = ddply(m, .(rgn_id, year, popsum), summarize, 
@@ -307,25 +319,11 @@ MAR = function(layers, status_years=2005:2011){
     mutate(
       mar_pop         = sust_tonnes_sum / popsum) %>%
     select(rgn_id, year, popsum, sust_tonnes_sum, mar_pop)
-  ry_b = csv_compare(ry, '6-ry-ddply')  # RIGHT
-  ry_a = ry
-  eq = all.equal(ry_a, ry_b)
-  if (class(eq) == 'character') browser()
+ # ry_b = csv_compare(ry, '6-ry-ddply')  # RIGHT DEBUG
+#   ry_a = ry
+#   eq = all.equal(ry_a, ry_b)
+#   if (class(eq) == 'character') browser()
 
-#   # DEBUG
-#   ry_b = csv_compare(ry, '6-ry-ddply')  # RIGHT
-#   ry_a = ry                             # WRONG
-#   
-#   ry_a %>% # WRONG
-#     filter(rgn_id==25)
-#   ry_b %>% # RIGHT
-#     filter(rgn_id==25)
-#   
-# 
-#   
-#   all.equal(ry_n, ry_a)
-#   all.equal(ry_n, ry_b)
-  
   
   # get reference quantile based on argument years
   ref_95pct = quantile(subset(ry, year <= max(status_years), mar_pop, drop=T), 0.95, na.rm=T)
@@ -337,7 +335,7 @@ MAR = function(layers, status_years=2005:2011){
                     mar_pop / ref_95pct)})
   status <- subset(ry, year == max(status_years), c('rgn_id', 'status'))
   status$status <- round(status$status*100, 2)  
-  x = csv_compare(ry, '8-ry-within')  # DEBUG  
+#   x = csv_compare(ry, '8-ry-within')  # DEBUG  
   
   # get list where trend is only to be calculated up to second-to-last-year
   # species where the last year of the time-series was 2010, and the same value was copied over to 2011
@@ -367,8 +365,6 @@ MAR = function(layers, status_years=2005:2011){
         mutate(dimension = 'trend')) %.%
     mutate(goal='MAR')
   
-  cat(sprintf('DEBUG: MAR status for Thailand[25]: %g\n', subset(scores, region_id==25 & goal=='MAR' & dimension=='status', score)))
-
   return(scores)
   # NOTE: some differences to www2013 are due to 4_yr species only previously getting trend calculated to 4 years (instead of 5)
 }
@@ -855,7 +851,7 @@ TR = function(layers, year_max, debug=T, pct_ref=90){
       dcast(rgn_id ~ year, value.var='Xtr')
     write.csv(d_c, sprintf('temp/%s_TR_0-pregap_wide.csv', basename(getwd())), row.names=F, na='')
     
-    o = read.csv("~/GitHub/ohi-global/eez2013/rawdata.Canada-CHONe2014/TR_status_pregap_Sept23.csv", na.strings='') %.%
+    o = read.csv('temp/TR_status_pregap_Sept23.csv', na.strings='') %.%
       melt(id='rgn_id', variable.name='year', value.name='Xtr_o') %.%
       mutate(year = as.integer(sub('x_TR_','', year, fixed=T))) %.%
       arrange(rgn_id, year)
@@ -998,32 +994,6 @@ TR = function(layers, year_max, debug=T, pct_ref=90){
   # final scores
   scores = d_b_u %.%
     select(region_id=rgn_id, goal, dimension, score)
-  
-# #  if (debug){
-#     
-#     # compare with original scores
-#     csv_o = file.path(dir_neptune_data, 'git-annex/Global/NCEAS-OHI-Scores-Archive/scores/scores.Global2013.www2013_2013-10-09.csv')
-#     o = read.csv(csv_o, na.strings='NA', row.names=1) %.% 
-#       filter(goal %in% c('TR') & dimension %in% c('status','trend') & region_id!=0) %.% 
-#       select(goal, dimension, region_id, score_o=score)
-#     
-#     vs = scores %.%
-#       merge(o, all=T, by=c('goal','dimension','region_id')) %.%
-#       merge(
-#         rgns %.%
-#           select(region_id=rgn_id, region_label=rgn_label), 
-#         all.x=T) %.%
-#       mutate(
-#         score_dif    = score - score_o,
-#         score_notna  = is.na(score)!=is.na(score_o)) %.%  
-#       #filter(abs(score_dif) > 0.01 | score_notna == T) %.%
-#       arrange(desc(dimension), desc(abs(score_dif))) %.%
-#       select(dimension, region_id, region_label, score_o, score, score_dif)
-#     
-#     # output comparison
-#     write.csv(vs, sprintf('temp/%s_TR_3-scores-vs.csv', basename(getwd())), row.names=F, na='')
-#     
-#   }
   
   return(scores)
 }
@@ -1711,6 +1681,7 @@ PreGlobalScores = function(layers, conf, scores){
 }
 
 FinalizeScores = function(layers, conf, scores){
+  
   # get regions
   rgns = SelectLayersData(layers, layers=conf$config$layer_region_labels, narrow=T)
     

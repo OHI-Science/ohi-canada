@@ -995,32 +995,6 @@ TR = function(layers, year_max, debug=T, pct_ref=90){
   scores = d_b_u %.%
     select(region_id=rgn_id, goal, dimension, score)
   
-  if (debug){
-    
-    # compare with original scores
-    csv_o = file.path(dir_neptune_data, 'git-annex/Global/NCEAS-OHI-Scores-Archive/scores/scores.Global2013.www2013_2013-10-09.csv')
-    o = read.csv(csv_o, na.strings='NA', row.names=1) %.% 
-      filter(goal %in% c('TR') & dimension %in% c('status','trend') & region_id!=0) %.% 
-      select(goal, dimension, region_id, score_o=score)
-    
-    vs = scores %.%
-      merge(o, all=T, by=c('goal','dimension','region_id')) %.%
-      merge(
-        rgns %.%
-          select(region_id=rgn_id, region_label=rgn_label), 
-        all.x=T) %.%
-      mutate(
-        score_dif    = score - score_o,
-        score_notna  = is.na(score)!=is.na(score_o)) %.%  
-      #filter(abs(score_dif) > 0.01 | score_notna == T) %.%
-      arrange(desc(dimension), desc(abs(score_dif))) %.%
-      select(dimension, region_id, region_label, score_o, score, score_dif)
-    
-    # output comparison
-    write.csv(vs, sprintf('temp/%s_TR_3-scores-vs.csv', basename(getwd())), row.names=F, na='')
-    
-  }
-  
   return(scores)
 }
 

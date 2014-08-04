@@ -1,4 +1,5 @@
 # presume that working directory in current scenario directory, eg:
+setwd('~/github/ohi-canada/eezCHONE')
 devtools::load_all('~/Documents/GitHub/ohicore')
 library(ohicore) # devtools::install('~/github/ohicore')
 

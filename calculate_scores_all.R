@@ -9,13 +9,13 @@ setwd(file.path('~/github/ohi-global'))
 setwd('~/ohi-global')
 
 ## check to see if following also works on Mac:
-source('../ohiprep/src/R/common.R')
+# source('../ohiprep/src/R/common.R')
 
 # new paths based on host machine
 dirs = list(
-  neptune_data  = dir_neptune_data, 
-  neptune_local = dir_neptune_local,
-  ohiprep       = '../ohiprep',
+#   neptune_data  = dir_neptune_data, 
+#   neptune_local = dir_neptune_local,
+#   ohiprep       = '../ohiprep',
   ohicore       = '../ohicore')
 
 
@@ -31,11 +31,11 @@ dirs = list(
 #library(ohicore) # or 
 devtools::load_all(dirs$ohicore)
 
-do.layercopy  = T
-do.layercheck = T
+do.layercopy  = F
+do.layercheck = F
 do.calculate  = T
 do.other      = F
-do.merge      = T
+do.merge      = F
 
 # scenarios
 scenarios = list(
@@ -56,7 +56,7 @@ scenarios = list(
     fld_dir      = 'dir_2012a',
     fld_fn       = 'fn_2012a',
     f_spatial    = c('../ohiprep/Global/NCEAS-Regions_v2014/data/regions_gcs.js'),
-    do           = T),
+    do           = F),
   antarctica2014 = list(
     google_key   = '0ArcIhYsFwBeNdHNxNk1iRHc1S05KLWsyb0ZtZjRjZnc',
     fld_dir      = 'dir_2013a',
@@ -219,7 +219,7 @@ for (i in 1:length(scenarios)){ # i=2
 
 
 # DEBUG comparison for 2013a
-source('../ohidev/report/compare_scores.R')
+# source('../ohidev/report/compare_scores.R')
 
 # comparison 2014a
 # source('../ohidev/report/compare_scenarios.R')
