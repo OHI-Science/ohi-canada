@@ -851,7 +851,7 @@ TR = function(layers, year_max, debug=T, pct_ref=90){
       dcast(rgn_id ~ year, value.var='Xtr')
     write.csv(d_c, sprintf('temp/%s_TR_0-pregap_wide.csv', basename(getwd())), row.names=F, na='')
     
-    o = read.csv(file.path('~/GitHub/ohi-canada/eez2013/rawdata.Canada-CHONe2014/TR_status_pregap_Sept23.csv', na.strings='') %.%
+    o = read.csv('temp/TR_status_pregap_Sept23.csv', na.strings='') %.%
       melt(id='rgn_id', variable.name='year', value.name='Xtr_o') %.%
       mutate(year = as.integer(sub('x_TR_','', year, fixed=T))) %.%
       arrange(rgn_id, year)

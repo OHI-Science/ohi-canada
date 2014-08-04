@@ -5,7 +5,7 @@ require(methods)
 require(ohicore)
 
 # populate CHONe folder and modify layers and functions
-# setwd('~/GitHub/ohi-canada') # this will be the default when you launch ohi-canada.Rproj
+setwd('~/GitHub/ohi-canada') # this will be the default when you launch ohi-canada.Rproj
 #delete
 unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
 unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
@@ -23,7 +23,7 @@ file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep
 
 #modify
 setwd('eezCHONE')
-#source("../layers_Canada-CHONe2014.R")
+source("../layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
 
 # calculate
 source("calculate_scores.R")
