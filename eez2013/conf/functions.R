@@ -35,13 +35,13 @@ Setup = function(){
     if (step=='7-ref95pct-quantile'){ x = setNames(as.numeric(x), '95%') }
     
 
-    eq = all.equal(o, x)
-    if (class(eq) == 'character'){
-      csv = sprintf('%s_%s_A.csv', prefix, step)
-      cat(sprintf('DEBUG: NOT EQUAL! writing %s.\n', csv))
-      print(eq)
-      write.csv(o, csv, row.names=F, na='') 
-    }
+#     eq = all.equal(o, x)
+#     if (class(eq) == 'character'){
+#       csv = sprintf('%s_%s_A.csv', prefix, step)
+#       cat(sprintf('DEBUG: NOT EQUAL! writing %s.\n', csv))
+#       print(eq)
+#       write.csv(o, csv, row.names=F, na='') 
+#     }
     return(x)
   }
   
@@ -269,7 +269,7 @@ MAR = function(layers, status_years=2005:2011){
     dcast(rgn_id + species + species_code + sust_coeff ~ year, value.var='tonnes', mean, na.rm=T) %.%
     arrange(rgn_id, species)
     
-  x = csv_compare(rky, '1-rky')
+#   x = csv_compare(rky, '1-rky') # DEBUG
   
   # smooth each species-country time-series using a running mean with 4-year window, excluding NAs from the 4-year mean calculation
   # TODO: simplify below with dplyr::group_by()
@@ -278,7 +278,7 @@ MAR = function(layers, status_years=2005:2011){
   rownames(rky_smooth) = as.character(yrs_smooth)
   rky_smooth = t(rky_smooth)
   rky = as.data.frame(cbind(rky[, c('rgn_id','species','species_code','sust_coeff')], rky_smooth)); head(rky)
-  x = csv_compare(rky, '2-rky-smooth')  # DEBUG
+#   x = csv_compare(rky, '2-rky-smooth')  # DEBUG
     
   # melt
   m = melt(rky,
@@ -319,10 +319,10 @@ MAR = function(layers, status_years=2005:2011){
     mutate(
       mar_pop         = sust_tonnes_sum / popsum) %>%
     select(rgn_id, year, popsum, sust_tonnes_sum, mar_pop)
-  ry_b = csv_compare(ry, '6-ry-ddply')  # RIGHT
-  ry_a = ry
-  eq = all.equal(ry_a, ry_b)
-  if (class(eq) == 'character') browser()
+ # ry_b = csv_compare(ry, '6-ry-ddply')  # RIGHT DEBUG
+#   ry_a = ry
+#   eq = all.equal(ry_a, ry_b)
+#   if (class(eq) == 'character') browser()
 
   
   # get reference quantile based on argument years
