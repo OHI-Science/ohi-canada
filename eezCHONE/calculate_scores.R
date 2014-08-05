@@ -1,17 +1,17 @@
 # presume that working directory in current scenario directory, eg:
-setwd('~/github/ohi-canada/eezCHONE')
+#setwd('~/github/ohi-canada/eezCHONE')
 devtools::load_all('~/GitHub/ohicore')
 library(ohicore) # devtools::install('~/github/ohicore')
 
 # load conf
-conf = Conf('conf')
+conf = Conf('eezCHONE/conf')
 
 # run checks on layers
-CheckLayers('layers.csv', 'layers', flds_id=conf$config$layers_id_fields)
+CheckLayers('eezCHONE/layers.csv', 'eezCHONE/layers', flds_id=conf$config$layers_id_fields)
 
 # load layers
-layers = Layers('layers.csv', 'layers')
+layers = Layers('eezCHONE/layers.csv', 'eezCHONE/layers')
 
 # calculate scores
 scores = CalculateAll(conf, layers, debug=F)
-write.csv(scores, 'scores.csv', na='', row.names=F)
+write.csv(scores, 'eezCHONE/scores.csv', na='', row.names=F)

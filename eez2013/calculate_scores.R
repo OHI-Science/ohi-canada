@@ -4,17 +4,17 @@ devtools::load_all('~/github/ohicore')
 # library(ohicore)
 
 # load conf
-conf = Conf('conf')
+conf = Conf('eez2013/conf')
 
 # run checks on layers
-CheckLayers('layers.csv', 'layers', flds_id=conf$config$layers_id_fields)
+CheckLayers('eez2013/layers.csv', 'eez2013/layers', flds_id=conf$config$layers_id_fields)
 
 # load layers
-layers = Layers('layers.csv', 'layers')
+layers = Layers('eez2013/layers.csv', 'eez2013/layers')
 
 # calculate scores
 scores = CalculateAll(conf, layers, debug=F)
-write.csv(scores, 'scores.csv', na='', row.names=F)
+write.csv(scores, 'eez2013/scores.csv', na='', row.names=F)
 
 
 # 
