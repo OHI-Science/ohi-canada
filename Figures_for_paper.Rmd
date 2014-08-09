@@ -1,0 +1,55 @@
+---
+title: "Figures for paper"
+author: "Remi Daigle"
+date: "Thursday, August 07, 2014"
+output: word_document
+---
+```{r,echo=FALSE,message=FALSE,warning=FALSE,results='hide',cache=F}
+# load packages
+devtools::load_all('~/GitHub/ohicore')
+source('PlotFlower_small.R')
+# require(plyr)
+require(dplyr)
+require(grid)
+require(png)
+# 
+rgn_id=218
+scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+# 
+# # get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+#  # region scores    
+    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+             setNames(score, goal))[names(wts)]
+fig1a="Figures_for_paper/fig1a.png"
+rgn_name="Canada"
+png(fig1a,width=2.3, height=2.3, units="in",res=300)
+#jpeg('test.jpg')
+# par()
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=0.4, label.cex=0.65, label.offset=0.2, cex=0.7, cex.main=1.2)
+dev.off()      
+    
+   
+```
+
+![](`r fig1a`)
+
+Figure 1: testy test test
