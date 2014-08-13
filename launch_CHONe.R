@@ -20,13 +20,13 @@ file.copy(paste('eez2013/conf/',fl,sep = ""),paste('eezCHONE/conf/',fl,sep = "")
 fl=list.files('eez2013/spatial')
 file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep = ""), overwrite = T)
 
+# calculate normal scores
+ source("eez2013/calculate_scores.R")
+# launch_app('~/GitHub/ohi-canada/eezCHONE')
+
 # modify
 source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
 
-# calculate normal scores
-# source("eez2013/calculate_scores.R")
-# launch_app('~/GitHub/ohi-canada/eezCHONE')
-
 # calculate Canadian scores
 source("eezCHONE/calculate_scores.R")
-launch_app('~/GitHub/ohi-canada/eezCHONE')
+#launch_app('~/GitHub/ohi-canada/eezCHONE')

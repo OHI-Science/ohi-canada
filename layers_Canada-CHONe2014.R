@@ -217,7 +217,7 @@ goals = read.csv('eezCHONE/conf/goals.csv', stringsAsFactors=F); head(goals);
 i = which(goals$goal=='AO')
 goals$goal[i]     = 'AN'
 goals$name[i]      = 'Aboriginal Needs'
-goals$name_flower[i]      = '           Aboriginal Needs'
+goals$name_flower[i]      = 'Aboriginal Needs'
 goals$description[i]     = 'This goal captures The extent to which Canada’s Aboriginals are able to access ocean resources for subsistence, social and ceremonial purposes'
 goals$preindex_function[i]  = 'AN(layers)'
 

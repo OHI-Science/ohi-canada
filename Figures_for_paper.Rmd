@@ -11,29 +11,79 @@ source('PlotFlower_small.R')
 # require(plyr)
 require(dplyr)
 require(grid)
-require(png)
+require(methods)
+require(ohicore)
+
+# set rgn to Canada
+rgn_id <- 218
+
+# set plotting variables
+w <- 2.3 #width
+h <- 2.3 #height
+r <- 300 #res
+d <- 0.4 #disk
+lc <- 0.65 #label.cex
+lo <- 0.2 #label.offset
+c <- 0.7 #cex
+cm <- 1.2 #cex.main
+
+# calculate all the scores
+# populate CHONe folder and modify layers and functions
+# delete
+# unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
+# unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
 # 
-rgn_id=218
-scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
-goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+# # create new layers.csv, and layers folder for Canada-CHONe2014 ####################
+# file.copy('eez2013/layers.csv', 'eezCHONE/layers.csv', overwrite = T)
+# file.copy('eez2013/scores.csv', 'eezCHONE/scores.csv', overwrite = T)
+# fl=list.files('eez2013/layers')
+# file.copy(paste('eez2013/layers/',fl,sep = ""),paste('eezCHONE/layers/',fl,sep = ""), overwrite = T)
+# fl=list.files('eez2013/conf')
+# file.copy(paste('eez2013/conf/',fl,sep = ""),paste('eezCHONE/conf/',fl,sep = ""), overwrite = T)
+# fl=list.files('eez2013/spatial')
+# file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep = ""), overwrite = T)
+# 
+# # calculate normal OHI scores
+# source("eez2013/calculate_scores.R")
+# # launch_app('~/GitHub/ohi-canada/eezCHONE')
+
+# modify
+source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
+
+# # calculate Canadian scores
+# source("eezCHONE/calculate_scores.R")
+# #launch_app('~/GitHub/ohi-canada/eezCHONE')
+
+
+### Normal OHI ###
+scores <- read.csv("eez2013/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eez2013/conf/goals.csv", stringsAsFactors=FALSE)
 goals_supra = na.omit(unique(goals$parent))
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 #goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
 goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
 # get goals for flowers, all and specific to weights
 goals.all = arrange(goals, order_color)[['goal']]
-# 
-# # get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
 cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
 names(cols.goals.all) = goals.all
-#  # region scores    
+# region scores    
     x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
              setNames(score, goal))[names(wts)]
-fig1a="Figures_for_paper/fig1a.png"
-rgn_name="Canada"
-png(fig1a,width=2.3, height=2.3, units="in",res=300)
-#jpeg('test.jpg')
-# par()
+w <- 2.3 #width
+h <- 2.3 #height
+r <- 300 #res
+d <- 0.4 #disk
+lc <- 0.65 #label.cex
+lo <- 0.2 #label.offset
+c <- 0.7 #cex
+cm <- 1.2 #cex.main
+
+### figure with normal OHI
+fig2a="Figures_for_paper/fig2a.png"
+rgn_name="Original OHI - Equal"
+png(fig2a,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -44,12 +94,173 @@ PlotFlower_small(main = rgn_name,
                            paste(goal_labels, '-', sep='\n'), 
                            paste(goal_labels, round(x), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
-           max.length = 100, disk=0.4, label.cex=0.65, label.offset=0.2, cex=0.7, cex.main=1.2)
+           max.length = 100, disk=0.4, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
 dev.off()      
-    
+
+
+### Canadian OHI ###
+scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+# region scores    
+    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+             setNames(score, goal))[names(wts)]
+
+
+### figure with normal OHI ###
+### weights: equal ###
+fig2b="Figures_for_paper/fig2b.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"equal")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Equal"
+png(fig2b,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()
+
+### weights: importance ###
+fig2c="Figures_for_paper/fig2c.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"importance")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Importance"
+png(fig2c,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+### weights: BWrank ###
+fig2d="Figures_for_paper/fig2d.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"BWrank")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - BW Rank"
+png(fig2d,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+### weights: lmc ###
+fig2e="Figures_for_paper/fig2e.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"lmc")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Logit Coef"
+png(fig2e,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+### weights: lmc1 ###
+fig2f="Figures_for_paper/fig2f.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"lmc1")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Logit Coef +1"
+png(fig2f,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+### weights: lmc10 ###
+fig2g="Figures_for_paper/fig2g.png" 
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"lmc10")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Logit Coef + 10"
+png(fig2g,width=w, height=h, units="in",res=r)
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+
    
 ```
+![](`r fig2a`)
 
-![](`r fig1a`)
+![](`r fig2b`)
+![](`r fig2c`)
+![](`r fig2d`)
+![](`r fig2e`)
+![](`r fig2f`)
+![](`r fig2g`)
+
 
 Figure 1: testy test test
