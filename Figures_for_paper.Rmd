@@ -1,10 +1,10 @@
 ---
 title: "Figures for paper"
 author: "Remi Daigle"
-date: "Thursday, August 07, 2014"
 output: word_document
 ---
 ```{r,echo=FALSE,message=FALSE,warning=FALSE,results='hide',cache=F}
+#### getting ready to plot flowers ####
 # load packages
 devtools::load_all('~/GitHub/ohicore')
 source('PlotFlower_small.R')
@@ -33,7 +33,7 @@ cm <- 1.2 #cex.main
 # unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
 # unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
 # 
-# # create new layers.csv, and layers folder for Canada-CHONe2014 ####################
+# # create new layers.csv, and layers folder for Canada-CHONe2014 
 # file.copy('eez2013/layers.csv', 'eezCHONE/layers.csv', overwrite = T)
 # file.copy('eez2013/scores.csv', 'eezCHONE/scores.csv', overwrite = T)
 # fl=list.files('eez2013/layers')
@@ -54,7 +54,27 @@ source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
 # source("eezCHONE/calculate_scores.R")
 # #launch_app('~/GitHub/ohi-canada/eezCHONE')
 
+# basic flower parameters
+w <- 2.35 #width
+h <- 2.35 #height
+r <- 600 #res
+d <- 0.4 #disk
+lc <- 1 #label.cex
+lo <- 0.2 #label.offset
+c <- 1.2 #cex
+cm <- 1.2 #cex.main
 
+#### Figure 1 ####
+fig1="Figures_for_paper/fig1.png"
+
+png(fig1,width=7, height=5, units="in",res=r)
+
+AN_timeseries <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/AN/AN_timeseries.csv", stringsAsFactors=FALSE)
+AN_timeseries <- AN_timeseries[AN_timeseries$rgn_id==rgn_id,]
+plot(AN_timeseries$year,AN_timeseries$value,xlab="Year",ylab="Aboriginal Needs Score",type='b',lwd=2,bty='l',ylim=c(0,1))
+dev.off()
+
+#### Figure 2 ####
 ### Normal OHI ###
 scores <- read.csv("eez2013/scores.csv", stringsAsFactors=FALSE) 
 goals <- read.csv("eez2013/conf/goals.csv", stringsAsFactors=FALSE)
@@ -71,19 +91,17 @@ names(cols.goals.all) = goals.all
 # region scores    
     x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
              setNames(score, goal))[names(wts)]
-w <- 2.3 #width
-h <- 2.3 #height
-r <- 300 #res
-d <- 0.4 #disk
-lc <- 0.65 #label.cex
-lo <- 0.2 #label.offset
-c <- 0.7 #cex
-cm <- 1.2 #cex.main
+
 
 ### figure with normal OHI
-fig2a="Figures_for_paper/fig2a.png"
+fig2="Figures_for_paper/fig2.png"
 rgn_name="Original OHI - Equal"
-png(fig2a,width=w, height=h, units="in",res=r)
+png(fig2,width=w*2, height=h*1, units="in",res=r)
+# nf <- layout(matrix(c(0,1,1,0,2,2,3,3,4,4,5,5,6,6,7,7), 4, 4, byrow=TRUE), respect=FALSE) 
+# nf <- layout(matrix(c(1,2), 1, 2, byrow=TRUE), respect=FALSE) 
+par(mfrow=c(1,2))
+crop=1.5
+
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -94,8 +112,74 @@ PlotFlower_small(main = rgn_name,
                            paste(goal_labels, '-', sep='\n'), 
                            paste(goal_labels, round(x), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
-           max.length = 100, disk=0.4, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()      
+           max.length = 100, disk=0.4, label.cex=lc/crop, label.offset=lo, cex=c/crop, cex.main=cm/crop)
+
+### Canadian OHI ###
+scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+# region scores    
+    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+             setNames(score, goal))[names(wts)]
+
+
+### figure with normal OHI ###
+### weights: equal ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"equal")
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Equal"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc/crop, label.offset=lo, cex=c/crop, cex.main=cm/crop)
+
+dev.off()  
+
+#### Figure 3 ####
+### Normal OHI ###
+scores <- read.csv("eez2013/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eez2013/conf/goals.csv", stringsAsFactors=FALSE)
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+# region scores    
+    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+             setNames(score, goal))[names(wts)]
+
+
+### figure with normal OHI
+fig3="Figures_for_paper/fig3.png"
+rgn_name="Original OHI - Equal"
+png(fig3,width=w*3, height=h*2, units="in",res=r)
+# nf <- layout(matrix(c(0,1,1,0,2,2,3,3,4,4,5,5,6,6,7,7), 4, 4, byrow=TRUE), respect=FALSE) 
+nf <- layout(matrix(c(1:6), 2, 3, byrow=TRUE), respect=FALSE) 
 
 
 ### Canadian OHI ###
@@ -119,14 +203,12 @@ names(cols.goals.all) = goals.all
 
 ### figure with normal OHI ###
 ### weights: equal ###
-fig2b="Figures_for_paper/fig2b.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"equal")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - Equal"
-png(fig2b,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -135,20 +217,17 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()
 
 ### weights: importance ###
-fig2c="Figures_for_paper/fig2c.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"importance")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - Importance"
-png(fig2c,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -157,20 +236,17 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()  
 
 ### weights: BWrank ###
-fig2d="Figures_for_paper/fig2d.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"BWrank")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - BW Rank"
-png(fig2d,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -179,20 +255,17 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()  
 
 ### weights: lmc ###
-fig2e="Figures_for_paper/fig2e.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"lmc")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - Logit Coef"
-png(fig2e,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -201,20 +274,17 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()  
 
 ### weights: lmc1 ###
-fig2f="Figures_for_paper/fig2f.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"lmc1")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - Logit Coef +1"
-png(fig2f,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -223,20 +293,17 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-dev.off()  
 
 ### weights: lmc10 ###
-fig2g="Figures_for_paper/fig2g.png" 
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
 goals$weight <- reweigh(weights,"lmc10")
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
 rgn_name="COHI - Logit Coef + 10"
-png(fig2g,width=w, height=h, units="in",res=r)
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -245,22 +312,330 @@ PlotFlower_small(main = rgn_name,
                            cols.goals.all[names(wts)]),
            labels  =ifelse(is.na(x), 
                            paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
+                           paste(goal_labels, round(wts,2), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
 dev.off()  
 
+#### Figure 4 ####
+weight_choice="lmc1"
+fig4="Figures_for_paper/fig4.png"
+png(fig4,width=w*2, height=h*3, units="in",res=r)
+nf <- layout(matrix(c(1,1,2,2,3,3,4,4,0,5,5,0), 3, 4, byrow=TRUE), respect=FALSE) 
 
+### weights: BC ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_BC.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="British Columbia"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: PR ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_PR.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="Prairies"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: ON ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_ON.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="Ontario"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: QC ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_QC.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="Quebec"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: MR ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_MR.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="Maritimes"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+
+#### Figure 5 ####
+weight_choice="lmc1"
+fig5="Figures_for_paper/fig5.png"
+png(fig5,width=w*2, height=h*3, units="in",res=r)
+nf <- layout(matrix(c(1,1,2,2,3,3,4,4,5,5,6,6), 3, 4, byrow=TRUE), respect=FALSE) 
+
+### weights: 20to24 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_20to24.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="20 to 24"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: 25to34 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_25to34.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="25 to 34"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: 35to44 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_35to44.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="35 to 44"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: 45to54 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_45to54.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="45 to 54"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: 55to64 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_55to64.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="55 to 64"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### weights: 65plus ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_65plus.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="> 65"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(wts,2), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+dev.off()  
+dev.off()  
+
+#### Figure 6 #####
+# load all weights
+weights_20to24 <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_20to24.csv", stringsAsFactors=FALSE)
+weights_25to34 <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_25to34.csv",
+                           stringsAsFactors=FALSE)
+weights_35to44 <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_35to44.csv",
+                           stringsAsFactors=FALSE)
+weights_45to54 <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_45to54.csv",
+                           stringsAsFactors=FALSE)
+weights_55to64 <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_55to64.csv",
+                           stringsAsFactors=FALSE)
+weights_65plus <- read.csv("~/GitHub/ohi-canada/eezCHONE/rawdata.Canada-CHONe2014/weights/weights_65plus.csv",
+                           stringsAsFactors=FALSE)
+
+# merge data frame
+weight_data <- rbind(cbind(age = 22, age_class = '20 to 24',weights_20to24),
+                     cbind(age = 30, age_class = '25 to 34',weights_25to34),
+                     cbind(age = 40, age_class = '35 to 34',weights_35to44),
+                     cbind(age = 50, age_class = '45 to 54',weights_45to54),
+                     cbind(age = 60, age_class = '55 to 64',weights_55to64),
+                     cbind(age = 70, age_class = '> 65',weights_65plus))
+
+weight_data$goal <- weight_data$X
+weight_data$goal=revalue(weight_data$goal, c("FoodProvision" = "FP",
+                            "AboriginalNeeds" = "AN",
+                            "NaturalProducts" = "NP",
+                            "CarbonStorage" = "CS",
+                            "CoastalProtection" = "CP",
+                            "CoastalLivelihoods" = "LE",
+                            "TourismRecreation" = "TR",
+                            "IconicPlacesSPecies" = "SP",
+                            "CleanWaters" = "CW",
+                            "Biodiversity" = "BD"
+                            ))
+
+fig6="Figures_for_paper/fig6.png" 
+png(fig6,width=7, height=7, units="in",res=r)
+
+
+plot.new()
+par(mar=c(4,4,4,6),xpd=TRUE)
+pchs <- c(0,15,1,16,2,5,17,18,3,4)
+
+plot(100,100,xlim=c(20,72),xlab="Age",ylab="Weight",ylim=c(0,1.75),bty="l")
+for(goal in unique(weight_data$goal)){
+  lm_data <- weight_data[weight_data$goal==goal,]
+  i <- c(1:10)[unique(weight_data$goal)==goal]
+  colour <- cols.goals.all[names(cols.goals.all)==goal]
+  fit=lm(BWrank~age,lm_data)
+  summary(fit)
+  points(lm_data$age,lm_data$BWrank,col=colour,pch=pchs[i],cex=2,lwd=3)
+  y=c(fit$coefficients[1]+22*fit$coefficients[2],fit$coefficients[1]+70*fit$coefficients[2])
+  lines(c(22,70),y,col=colour,lwd=3)
+  print(colour)
+}
+
+
+legend(75,1.6,unique(weight_data$goal)[c(1:5,7,6,8:10)],
+       pch=pchs[c(1:5,7,6,8:10)],
+       pt.cex=2,
+       lwd=3,
+       col=cols.goals.all[c(2,4:8,10,13,15,17)],
+       y.intersp=2,
+       bty="n")
+dev.off()  
+
+#### end ####
    
 ```
-![](`r fig2a`)
+![](`r fig1`)
 
-![](`r fig2b`)
-![](`r fig2c`)
-![](`r fig2d`)
-![](`r fig2e`)
-![](`r fig2f`)
-![](`r fig2g`)
+**Figure 1**: Aboriginal needs timeseries
 
+![](`r fig2`)
 
-Figure 1: testy test test
+**Figure 2**: normal OHI and Canadian modified OHI, numbers indicate scores
+
+![](`r fig3`)
+
+**Figure 3**: Canadian modified OHI with different weighting techniues, numbers indicate weights
+
+![](`r fig4`)
+
+**Figure 4**: Canadian modified OHI with lmc1 weights from each province, numbers indicate weights
+
+![](`r fig5`)
+
+**Figure 5**: Canadian modified OHI with lmc1 weights from each age group, numbers indicate weights
+
+![](`r fig6`)
+
+**Figure 6**: relationship between lmc1 weights and the median of each age group
+
+**Appendix**:
+
+![](Figures_for_paper/Map_appendix.png)
+
+**Figure A1**: Map of carbon storage areas
