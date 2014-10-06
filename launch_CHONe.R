@@ -38,4 +38,3 @@ scoreschone = read.csv('eezCHONE/scores.csv') %>%
    filter(region_id == 218, dimension == 'score')
    
 scoreschone$diff <- scores2013$score-scoreschone$score
-
