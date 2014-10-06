@@ -40,10 +40,10 @@ t = lm(status ~ year, d)$coefficients[['year']]
 trend = rbind(trend,data.frame(cbind(rgn_id=218,habitat=c('clathrates','permafrost'),trend=c(t,t))))
 
 # write out modified layers
-write.csv(pres,'eezCHONE/layers/hab_habitat_presence.csv', na='', row.names=F)
-write.csv(ext,'eezCHONE/layers/hab_habitat_extent.csv', na='', row.names=F)
-write.csv(health,'eezCHONE/layers/hab_habitat_health_disaggregatedNature2012.csv', na='', row.names=F)
-write.csv(trend,'eezCHONE/layers/hab_habitat_trend_disaggregatedNature2012.csv', na='', row.names=F)
+write.csv(pres,'eezCHONE/layers/hab_presence.csv', na='', row.names=F)
+write.csv(ext,'eezCHONE/layers/hab_extent.csv', na='', row.names=F)
+write.csv(health,'eezCHONE/layers/hab_health_disaggregatedNature2012.csv', na='', row.names=F)
+write.csv(trend,'eezCHONE/layers/hab_trend_disaggregatedNature2012.csv', na='', row.names=F)
 
 
 ########################################## Change iconic species #############################################################

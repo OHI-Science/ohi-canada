@@ -1,5 +1,5 @@
 rm(list=ls())
-
+wd <- getwd()
 devtools::load_all('~/GitHub/ohicore')
 require(methods)
 require(ohicore)
@@ -23,10 +23,19 @@ file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep
 # calculate normal scores
  source("eez2013/calculate_scores.R")
 # launch_app('~/GitHub/ohi-canada/eezCHONE')
-
+setwd(wd)
 # modify
 source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
 
 # calculate Canadian scores
 source("eezCHONE/calculate_scores.R")
 #launch_app('~/GitHub/ohi-canada/eezCHONE')
+
+scores2013 = read.csv('eez2013/scores.csv') %>%
+   filter(region_id == 218, dimension == 'score')
+ 
+scoreschone = read.csv('eezCHONE/scores.csv') %>% 
+   filter(region_id == 218, dimension == 'score')
+   
+scoreschone$diff <- scores2013$score-scoreschone$score
+
