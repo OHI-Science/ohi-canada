@@ -290,3 +290,14 @@ reweigh <- function(w,i){
   return(goals$weight)
 }
 
+# fix FP weights function
+fix_FP_weights <- function(goals,scores,rgn_id){
+  #back calculate subgoal weights from FP
+  FPscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FP'&scores$dimension=='score']
+  FISscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FIS'&scores$dimension=='score']
+  MARscore <- scores$score[scores$region_id==rgn_id&scores$goal=='MAR'&scores$dimension=='score']
+  FISweight <- (FPscore-MARscore)/(FISscore-MARscore)
+  goals$weight[goals$goal=='FIS']=FISweight
+  goals$weight[goals$goal=='MAR']=1-FISweight
+  goals
+}
