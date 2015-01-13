@@ -72,16 +72,16 @@ spp_status_weights = data.frame(COSEWIC_Status = names(spp_status_weights),
                                 status_weight  = spp_status_weights, stringsAsFactors=F)
 
 # get status for iconics
-spp_ico_sara = spp_ico %.%
-  inner_join(spp_sara, by='Scientific_name') %.%
-  inner_join(spp_range_weights, by='Range') %.%
-  inner_join(spp_status_weights, by='COSEWIC_Status') %.%
-  rename(c(Scientific_name='sciname')) %.%
-  group_by(sciname) %.%
-  summarise(
+spp_ico_sara = spp_ico %>%
+  inner_join(spp_sara, by='Scientific_name') %>%
+  inner_join(spp_range_weights, by='Range') %>%
+  inner_join(spp_status_weights, by='COSEWIC_Status') %>%
+  #rename(c(Scientific_name='sciname',category='categoy',rgn_id='rgn_id')) %>%
+  group_by(Scientific_name) %>%
+  summarise(  
     value = weighted.mean(x=status_weight, w=range_weight),
     rgn_id        = 218)
-  
+names(spp_ico_sara)[1] <- 'sciname'
 ###
 # create new ico_spp_extinction_status now with extinction risk as numeric value and not categorical with these Canada values swapped in
 ico_spp_status = read.csv('eezCHONE/layers/ico_spp_extinction_status.csv', stringsAsFactors=F); head(ico_spp_status)
@@ -104,12 +104,12 @@ spp_ico_sara$value[spp_ico_sara$value==0.4] <- 'VU'
 spp_ico_sara$value[spp_ico_sara$value==0.6] <- 'EN'
 spp_ico_sara$value[spp_ico_sara$value==0.8] <- 'CR'
 spp_ico_sara$value[spp_ico_sara$value==1] <- 'EX'
-spp_ico_sara <- rename(spp_ico_sara, c('value'='category'))
+names(spp_ico_sara)[2] <- 'category'
 
 # inject Canada values
-ico_spp_status = ico_spp_status %.%
-  filter(rgn_id != 218) %.%
-  select(rgn_id, sciname, category) %.%
+ico_spp_status = ico_spp_status %>%
+  filter(rgn_id != 218) %>%
+  select(rgn_id, sciname, category) %>%
   rbind(spp_ico_sara)
   
 # write out new layer
