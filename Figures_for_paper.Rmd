@@ -269,15 +269,15 @@ PlotFlower_small(main = rgn_name,
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
 
-### weights: lmc ###
+### weights: LG ###
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
-goals$weight <- reweigh(weights,"lmc")
+goals$weight <- reweigh(weights,"LG")
 goals <- fix_FP_weights(goals,scores,rgn_id)
 
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
-rgn_name="COHI - Logit Coef"
+rgn_name="COHI - Logit Coef + 0.1"
 PlotFlower_small(main = rgn_name,
            lengths=x,
            widths=wts,
@@ -290,11 +290,11 @@ PlotFlower_small(main = rgn_name,
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
 
-### weights: lmc1 ###
+### weights: LG1 ###
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
-goals$weight <- reweigh(weights,"lmc1")
+goals$weight <- reweigh(weights,"LG1")
 goals <- fix_FP_weights(goals,scores,rgn_id)
 
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
@@ -311,11 +311,11 @@ PlotFlower_small(main = rgn_name,
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
 
-### weights: lmc10 ###
+### weights: LG10 ###
 # set weights
 weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
 #calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
-goals$weight <- reweigh(weights,"lmc10")
+goals$weight <- reweigh(weights,"LG10")
 goals <- fix_FP_weights(goals,scores,rgn_id)
 
 wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
@@ -334,7 +334,7 @@ PlotFlower_small(main = rgn_name,
 dev.off()  
 
 #### Figure 4 ####
-weight_choice="lmc1"
+weight_choice="LG1"
 fig4="Figures_for_paper/fig4.png"
 png(fig4,width=w*2, height=h*3, units="in",res=r)
 nf <- layout(matrix(c(1,1,2,2,3,3,4,4,0,5,5,0), 3, 4, byrow=TRUE), respect=FALSE) 
@@ -446,7 +446,7 @@ PlotFlower_small(main = rgn_name,
 dev.off()  
 
 #### Figure 5 ####
-weight_choice="lmc1"
+weight_choice="LG1"
 fig5="Figures_for_paper/fig5.png"
 png(fig5,width=w*2, height=h*3, units="in",res=r)
 nf <- layout(matrix(c(1,1,2,2,3,3,4,4,5,5,6,6), 3, 4, byrow=TRUE), respect=FALSE) 
@@ -661,11 +661,11 @@ dev.off()
 
 ![](`r fig4`)
 
-**Figure 4**: Canadian modified OHI with lmc1 weights from each province, numbers indicate weights
+**Figure 4**: Canadian modified OHI with LG1 weights from each province, numbers indicate weights
 
 ![](`r fig5`)
 
-**Figure 5**: Canadian modified OHI with lmc1 weights from each age group, numbers indicate weights
+**Figure 5**: Canadian modified OHI with LG1 weights from each age group, numbers indicate weights
 
 
 
@@ -678,4 +678,4 @@ dev.off()
 **This will be in the second paper**
 ![](`r fig6`)
 
-**Figure 1**: relationship between lmc1 weights and the median of each age group
+**Figure 1**: relationship between LG1 weights and the median of each age group
