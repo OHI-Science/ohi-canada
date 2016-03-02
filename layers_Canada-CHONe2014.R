@@ -1,4 +1,4 @@
-library(plyr)
+# library(plyr)
 library(dplyr)
 
 #wd = '~/GitHub/ohi-canada/eezCHONE'
@@ -197,7 +197,11 @@ source("eezCHONE/rawdata.Canada-CHONe2014/AN/AN_timeseries.R")
 AN = function(layers, 
               Sustainability=1.0){
   print("AN source works")
-  layers_data =rename(SelectLayersData(layers, layers='rny_an_timeseries'),c('id_num'='region_id','val_num'='score'))
+  layers_data = # plyr::rename(SelectLayersData(layers, layers='rny_an_timeseries'),c('id_num'='region_id','val_num'='score'))
+    SelectLayersData(layers, layers='rny_an_timeseries') %>%
+    dplyr::select(region_id = id_num,
+                  score     = val_num, 
+                  year)
   #year = 2014
   # status
   r.status = subset(layers_data, year==max(layers_data$year, na.rm=T), c(region_id, score)); summary(r.status); dim(r.status)
@@ -205,19 +209,34 @@ AN = function(layers,
   
   
   # trend
-  r.trend = ddply(
-    layers_data, .(region_id), function(x){      
-        d = data.frame(status=x$score, year=x$year)[tail(which(!is.na(x$score)), 10),]
-        
-        data.frame(trend = lm(status ~ year, d)$coefficients[['year']])
-      }); # summary(r.trend); summary(subset(scores_www, goal=='AN' & dimension=='trend'))
+  r.trend = layers_data %>%
+    group_by(region_id) %>%
+    filter(year >= max(year)-10) %>%
+    do(data.frame(trend = coef(lm(score ~ year, .))[['year']])) %>%
+    as.data.frame()
+  
+  ## trend check 1
+    # r.trend %>% filter(region_id == 218) 
+    # region_id       trend
+    # (int)       (dbl)
+    # 1       218 -0.01659904
+    
+  ## trend check 2
+  # coef(lm(score ~ year, data = layers_data[
+  #   layers_data$region_id == 218 & 
+  #   layers_data$year >= max(layers_data$year)-10 ,]))
+  
   
   # return scores
-  #browser()
-  s.status = cbind(rename(r.status, c('score'='score')), data.frame('dimension'='status')); head(s.status)
-  s.trend  = cbind(rename(r.trend , c('trend' ='score')), data.frame('dimension'='trend')); head(s.trend)
-  scores = cbind(rbind(s.status, s.trend), data.frame('goal'='AN')); dlply(scores, .(dimension), summary)
-  return(scores)  
+  scores = r.status %>%
+    mutate(dimension='status') %>%
+    rbind(
+      r.trend %>%
+        select(region_id, score=trend) %>%
+        mutate(dimension='trend'))  %>%
+    mutate(goal='AN')
+  return(scores)
+  
 }
 
 
