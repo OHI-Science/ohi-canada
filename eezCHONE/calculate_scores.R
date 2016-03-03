@@ -1,7 +1,9 @@
 # presume that working directory in current scenario directory, eg:
 #setwd('~/github/ohi-canada/eezCHONE')
-devtools::load_all('~/GitHub/ohicore')
+# devtools::load_all('~/GitHub/ohicore')
 library(ohicore) # devtools::install('~/github/ohicore')
+library(dplyr)
+library(tidyr)
 
 # load conf
 conf = Conf('eezCHONE/conf')

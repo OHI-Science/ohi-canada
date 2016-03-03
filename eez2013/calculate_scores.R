@@ -1,6 +1,6 @@
 # presume that working directory in current scenario directory, eg:
 # setwd('~/github/ohi-global/eez2013')
-devtools::load_all('~/github/ohicore')
+# devtools::load_all('~/github/ohicore')
 # library(ohicore)
 
 # load conf
