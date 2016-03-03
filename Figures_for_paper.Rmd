@@ -6,13 +6,15 @@ output: word_document
 ```{r,echo=FALSE,message=FALSE,warning=FALSE,results='hide',cache=F}
 #### getting ready to plot flowers ####
 # load packages
-devtools::load_all('~/GitHub/ohicore')
-source('PlotFlower_small.R')
+# devtools::load_all('~/GitHub/ohicore')
+# source('install_ohicore.r')
 # require(plyr)
 require(dplyr)
 require(grid)
 require(methods)
 require(ohicore)
+source('PlotFlower_small.R')
+
 
 # set rgn to Canada
 rgn_id <- 218
@@ -28,31 +30,35 @@ c <- 0.7 #cex
 cm <- 1.2 #cex.main
 
 # calculate all the scores
-# populate CHONe folder and modify layers and functions
-# delete
-# unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
-# unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
-# 
-# # create new layers.csv, and layers folder for Canada-CHONe2014 
-# file.copy('eez2013/layers.csv', 'eezCHONE/layers.csv', overwrite = T)
-# file.copy('eez2013/scores.csv', 'eezCHONE/scores.csv', overwrite = T)
-# fl=list.files('eez2013/layers')
-# file.copy(paste('eez2013/layers/',fl,sep = ""),paste('eezCHONE/layers/',fl,sep = ""), overwrite = T)
-# fl=list.files('eez2013/conf')
-# file.copy(paste('eez2013/conf/',fl,sep = ""),paste('eezCHONE/conf/',fl,sep = ""), overwrite = T)
-# fl=list.files('eez2013/spatial')
-# file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep = ""), overwrite = T)
-# 
-# # calculate normal OHI scores
-# source("eez2013/calculate_scores.R")
-# # launch_app('~/GitHub/ohi-canada/eezCHONE')
-
-# modify
-source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
-
-# # calculate Canadian scores
-# source("eezCHONE/calculate_scores.R")
-# #launch_app('~/GitHub/ohi-canada/eezCHONE')
+calculate_new_scores <- TRUE
+if(calculate_new_scores){
+  # populate CHONe folder and modify layers and functions
+  # delete
+  unlink('eezCHONE/conf/*');unlink('eezCHONE/layers/*');unlink('eezCHONE/spatial/*')
+  unlink('eezCHONE/layers.csv');unlink('eezCHONE/scores.csv');
+  
+  # create new layers.csv, and layers folder for Canada-CHONe2014
+  file.copy('eez2013/layers.csv', 'eezCHONE/layers.csv', overwrite = T)
+  file.copy('eez2013/scores.csv', 'eezCHONE/scores.csv', overwrite = T)
+  fl=list.files('eez2013/layers')
+  file.copy(paste('eez2013/layers/',fl,sep = ""),paste('eezCHONE/layers/',fl,sep = ""), overwrite = T)
+  fl=list.files('eez2013/conf')
+  file.copy(paste('eez2013/conf/',fl,sep = ""),paste('eezCHONE/conf/',fl,sep = ""), overwrite = T)
+  fl=list.files('eez2013/spatial')
+  file.copy(paste('eez2013/spatial/',fl,sep = ""),paste('eezCHONE/spatial/',fl,sep = ""), overwrite = T)
+  
+  # calculate normal OHI scores
+  source("eez2013/calculate_scores.R")
+  # launch_app('~/GitHub/ohi-canada/eezCHONE')
+  
+  # modify
+  source("layers_Canada-CHONe2014.R") # this line "Canadianizes" the index
+  
+  # calculate Canadian scores
+  source("eezCHONE/calculate_scores.R")
+  #launch_app('~/GitHub/ohi-canada/eezCHONE')
+}
+  
 
 # basic flower parameters
 w <- 2.35 #width
@@ -668,6 +674,7 @@ dev.off()
 **Table A1**: The score, current status, likely future state, trend, pressure and resilience for the Canadian Ocean Health Index.
 ```{r,echo=FALSE,message=FALSE,warning=FALSE,cache=F}
 require(tidyr)
+require(knitr)
 scores=read.csv('eezCHONE/scores.csv', stringsAsFactors=F)
 test <- scores[scores$region_id==218,] %>% 
   spread(dimension,score)
