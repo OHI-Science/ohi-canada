@@ -9,10 +9,11 @@ output: word_document
 # devtools::load_all('~/GitHub/ohicore')
 # source('install_ohicore.r')
 # require(plyr)
+require(ohicore)
 require(dplyr)
 require(grid)
 require(methods)
-require(ohicore)
+require(tidyr)
 source('PlotFlower_small.R')
 
 
