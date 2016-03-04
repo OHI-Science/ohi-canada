@@ -17,6 +17,25 @@ newpres=data.frame(cbind(rgn_id=1:278,habitat=rep(c('clathrates','permafrost'),e
 newpres$boolean[newpres$rgn_id==218]=1
 pres=rbind(pres,newpres)
 
+# inject permafrost and clathrates
+# pressure matrix
+pm=read.csv('eezCHONE/conf/pressures_matrix.csv', stringsAsFactors=F)
+tempdf <- data.frame(matrix(rep("",ncol(pm)*2),nrow=2))
+names(tempdf) <- names(pm)
+tempdf$goal <- "CS"
+tempdf$component <- c('clathrates','permafrost')
+tempdf$cc_sst <- c(3,3)
+tempdf$cc_slr <- c(1,1)
+tempdf$ss_wgi <- c(1,1)
+pm <- rbind(pm,tempdf)
+write.csv(pm,'eezCHONE/conf/pressures_matrix.csv',row.names=FALSE,na="")
+
+# inject permafrost and clathrates
+# config.R
+temp <- readLines('eezCHONE/conf/config.R') 
+temp[13] <- gsub('cs_habitat_extent','hab_presence',temp[13])
+writeLines(temp,'eezCHONE/conf/config.R')
+
 #extent
 ext=rbind(ext,data.frame(cbind(rgn_id=218,habitat=c('clathrates','permafrost'),km2=c(2517375.704,819702.5225))))
 

@@ -10,7 +10,7 @@ resilience_components = list('NP'  = c('layer'='np_harvest_product_weight' , 'le
                              'CP'  = c('layer'='cp_habitat_extent_rank'    , 'level'='region_id'),           # old: rnk_cp_habitat_extent
                              'HAB' = c('layer'='hab_presence'              , 'level'='region_id'))
 pressures_components  = list('NP'  = c('layer'='np_harvest_product_weight' , 'level'='region_id-category'),
-                             'CS'  = c('layer'='cs_habitat_extent'         , 'level'='region_id'),
+                             'CS'  = c('layer'='hab_presence'         , 'level'='region_id'),
                              'CP'  = c('layer'='cp_habitat_extent_rank'    , 'level'='region_id'),
                              'LIV' = c('layer'='le_sector_weight'          , 'level'='region_id'),
                              'ECO' = c('layer'='le_sector_weight'          , 'level'='region_id'),
