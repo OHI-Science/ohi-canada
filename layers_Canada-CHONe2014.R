@@ -334,8 +334,8 @@ fix_FP_weights <- function(goals,scores,rgn_id){
   FPscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FP'&scores$dimension=='score']
   FISscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FIS'&scores$dimension=='score']
   MARscore <- scores$score[scores$region_id==rgn_id&scores$goal=='MAR'&scores$dimension=='score']
-  FISweight <- (FPscore-MARscore)/(FISscore-MARscore)
+  FISweight <- (FPscore-MARscore)/(FISscore-MARscore)*goals$weight[goals$goal=='FP']
   goals$weight[goals$goal=='FIS']=FISweight
-  goals$weight[goals$goal=='MAR']=1-FISweight
-  goals
+  goals$weight[goals$goal=='MAR']=goals$weight[goals$goal=='FP']-FISweight
+  return(goals$weight)
 }
