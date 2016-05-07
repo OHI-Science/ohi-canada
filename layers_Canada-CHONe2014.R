@@ -5,7 +5,7 @@ library(dplyr)
 #wd = '/Users/bbest/Github_Mac/ohicore_Canada-CHONe/inst/extdata'
 #setwd(wd)
 
-########################################## add carbon storage habitats #############################################################
+######################################### add carbon storage habitats #############################################################
 pres=read.csv('eezCHONE/layers/hab_presence.csv', na.strings='', stringsAsFactors=F);head(pres);
 ext=read.csv('eezCHONE/layers/hab_extent.csv', na.strings='', stringsAsFactors=F);head(ext);
 health=read.csv('eezCHONE/layers/hab_health.csv', na.strings='', stringsAsFactors=F);head(health);
@@ -32,7 +32,7 @@ write.csv(pm,'eezCHONE/conf/pressures_matrix.csv',row.names=FALSE,na="")
 
 # inject permafrost and clathrates
 # config.R
-temp <- readLines('eezCHONE/conf/config.R') 
+temp <- readLines('eezCHONE/conf/config.R')
 temp[13] <- gsub('cs_habitat_extent','hab_presence',temp[13])
 writeLines(temp,'eezCHONE/conf/config.R')
 
@@ -167,7 +167,7 @@ write.csv(ciw, 'eezCHONE/layers/rgn_wb_cwi_2013_rescaled.csv', na='', row.names=
 write.csv(ciw2, 'eezCHONE/layers/rgn_wb_cwi_2013_rescaled_inverse.csv', na='', row.names=F)
 
 # alter fields for this updated layer
-layers = read.csv('eezCHONE/layers.csv', na.strings='', stringsAsFactors=F); head(layers); 
+layers = read.csv('eezCHONE/layers.csv', na.strings='', stringsAsFactors=F); head(layers);
 
 i = which(layers$layer=='ss_wgi')
 layers$layer[i]     = 'ss_cwi'
@@ -206,46 +206,46 @@ rm$cwi_all='cwi_all'
 write.csv(rm,'eezCHONE/conf/resilience_matrix.csv',row.names=FALSE)
 
 
-##################################### Aboriginal Needs ################################################################################
+# ##################################### Aboriginal Needs ################################################################################
 source("eezCHONE/rawdata.Canada-CHONe2014/AN/AN_timeseries.R")
 
-# copies modified functions.R in rawdata.Canada-CHONe2014/ and to conf/functions.R 
+# copies modified functions.R in rawdata.Canada-CHONe2014/ and to conf/functions.R
 #file.copy('rawdata.Canada-CHONe2014/functions.R', 'conf/functions.R', overwrite = T)
 #file.copy('conf.Global2013.www2013/functions.R', 'conf/functions.R', overwrite = T)
 
-AN = function(layers, 
+AN = function(layers,
               Sustainability=1.0){
   print("AN source works")
   layers_data = # plyr::rename(SelectLayersData(layers, layers='rny_an_timeseries'),c('id_num'='region_id','val_num'='score'))
     SelectLayersData(layers, layers='rny_an_timeseries') %>%
     dplyr::select(region_id = id_num,
-                  score     = val_num, 
+                  score     = val_num,
                   year)
   #year = 2014
   # status
   r.status = subset(layers_data, year==max(layers_data$year, na.rm=T), c(region_id, score)); summary(r.status); dim(r.status)
   r.status$score = r.status$score * 100 * Sustainability
-  
-  
+
+
   # trend
   r.trend = layers_data %>%
     group_by(region_id) %>%
     filter(year >= max(year)-10) %>%
     do(data.frame(trend = coef(lm(score ~ year, .))[['year']])) %>%
     as.data.frame()
-  
+
   ## trend check 1
-    # r.trend %>% filter(region_id == 218) 
+    # r.trend %>% filter(region_id == 218)
     # region_id       trend
     # (int)       (dbl)
     # 1       218 -0.01659904
-    
+
   ## trend check 2
   # coef(lm(score ~ year, data = layers_data[
-  #   layers_data$region_id == 218 & 
+  #   layers_data$region_id == 218 &
   #   layers_data$year >= max(layers_data$year)-10 ,]))
-  
-  
+
+
   # return scores
   scores = r.status %>%
     mutate(dimension='status') %>%
@@ -255,12 +255,12 @@ AN = function(layers,
         mutate(dimension='trend'))  %>%
     mutate(goal='AN')
   return(scores)
-  
+
 }
 
 
 # rename Artisinal Opportunities to Aboriginal Needs
-goals = read.csv('eezCHONE/conf/goals.csv', stringsAsFactors=F); head(goals); 
+goals = read.csv('eezCHONE/conf/goals.csv', stringsAsFactors=F); head(goals);
 
 i = which(goals$goal=='AO')
 goals$goal[i]     = 'AN'
@@ -277,7 +277,7 @@ file.copy('eezCHONE/rawdata.Canada-CHONe2014/AN/AN_timeseries.csv', 'eezCHONE/la
 
 
 # alter fields for this updated layer
-layers = read.csv('eezCHONE/layers.csv', na.strings='', stringsAsFactors=F); head(layers); 
+layers = read.csv('eezCHONE/layers.csv', na.strings='', stringsAsFactors=F); head(layers);
 
 # remove unnecessary layer
 i = which(layers$layer!='ao_access')
@@ -303,7 +303,7 @@ rm$goal[rm$goal=='AO']     = 'AN'
 write.csv(rm,'eezCHONE/conf/resilience_matrix.csv',row.names=FALSE)
 
 
-##################################### weighting ################################################################################
+# ##################################### weighting ################################################################################
 
 #create function to alter weights
 reweigh <- function(w,i){

@@ -79,69 +79,6 @@ png(fig2,width=w*3, height=h*1, units="in",res=r)
 par(mfrow=c(1,3))
 
 
-
-### Canadian OHI ###
-scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
-goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
-goals$weight <- fix_FP_weights(goals,scores,rgn_id)
-
-goals_supra = na.omit(unique(goals$parent))
-wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
-#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
-goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
-# get goals for flowers, all and specific to weights
-goals.all = arrange(goals, order_color)[['goal']]
-
-# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
-cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
-names(cols.goals.all) = goals.all
-# region scores    
-    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
-             setNames(score, goal))[names(wts)]
-
-
-### figure with normal OHI ###
-### weights: equal ###
-# set weights
-weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
-#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
-goals$weight <- reweigh(weights,"lmc1")
-goals$weight <- fix_FP_weights(goals,scores,rgn_id)
-wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
-rgn_name="COHI - BW DCE Coef"
-PlotFlower_small(main = rgn_name,
-           lengths=x,
-           widths=wts,
-           fill.col=ifelse(is.na(x), 
-                           'grey80', 
-                           cols.goals.all[names(wts)]),
-           labels  =ifelse(is.na(x), 
-                           paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
-           center=round(weighted.mean(x, wts, na.rm=T)),
-           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-
-### figure with normal OHI ###
-### weights: equal ###
-# set weights
-weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
-#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
-goals$weight <- reweigh(weights,"equal")
-goals$weight <- fix_FP_weights(goals,scores,rgn_id)
-wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
-rgn_name="COHI - Equal"
-PlotFlower_small(main = rgn_name,
-           lengths=x,
-           widths=wts,
-           fill.col=ifelse(is.na(x), 
-                           'grey80', 
-                           cols.goals.all[names(wts)]),
-           labels  =ifelse(is.na(x), 
-                           paste(goal_labels, '-', sep='\n'), 
-                           paste(goal_labels, round(x), sep='\n')),
-           center=round(weighted.mean(x, wts, na.rm=T)),
-           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
-
 ### Normal OHI
 scores <- read.csv("eez2013/scores.csv", stringsAsFactors=FALSE) 
 goals <- read.csv("eez2013/conf/goals.csv", stringsAsFactors=FALSE)
@@ -177,6 +114,69 @@ PlotFlower_small(main = rgn_name,
                            paste(goal_labels, round(x), sep='\n')),
            center=round(weighted.mean(x, wts, na.rm=T)),
            max.length = 100, disk=0.4, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### Canadian OHI ###
+scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+goals$weight <- fix_FP_weights(goals,scores,rgn_id)
+
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+# region scores    
+    x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+             setNames(score, goal))[names(wts)]
+
+
+### figure with COHI equal ###
+### weights: equal ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"equal")
+goals$weight <- fix_FP_weights(goals,scores,rgn_id)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - Equal"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
+### figure with COHI lmc 1 ###
+### weights: lmc1 ###
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_All.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,"lmc1")
+goals$weight <- fix_FP_weights(goals,scores,rgn_id)
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+rgn_name="COHI - BW-DCE"
+PlotFlower_small(main = rgn_name,
+           lengths=x,
+           widths=wts,
+           fill.col=ifelse(is.na(x), 
+                           'grey80', 
+                           cols.goals.all[names(wts)]),
+           labels  =ifelse(is.na(x), 
+                           paste(goal_labels, '-', sep='\n'), 
+                           paste(goal_labels, round(x), sep='\n')),
+           center=round(weighted.mean(x, wts, na.rm=T)),
+           max.length = 100, disk=d, label.cex=lc, label.offset=lo, cex=c, cex.main=cm)
+
 
 dev.off()  
 
@@ -258,8 +258,8 @@ wtsdf$type <- factor(wtsdf$type,levels=c('equal','importance','BWrank','lmc1'),o
   scale_y_continuous(name="Weight",
                      limits=c(0,11),
                      expand=c(0,0))+
-  scale_x_discrete(name="Weighting Strategy",
-                   labels=c("Equal", "Likert Importance", "BW Rank","BW DCE Coef"),
+  scale_x_discrete(name="Weighting Scheme",
+                   labels=c("Equal", "Likert", "BW-Rank","BW-DCE"),
                    expand=c(0,0))+
   annotate("text",x=c(1,2,3,4),y=10.5,
            label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
@@ -465,7 +465,7 @@ wtsdf$type <- factor(wtsdf$type,levels=c('age20to24','age25to34','age35to44','ag
   scale_y_continuous(name="Weight",
                      limits=c(0,11),
                      expand=c(0,0))+
-  scale_x_discrete(name="Age",
+  scale_x_discrete(name="Respondent age (years)",
                    labels=c('20 to 24','25 to 34','35 to 44','45 to 54','55 to 64','> 65'),
   expand=c(0,0))+
   annotate("text",x=c(1,2,3,4,5,6),y=10.5,
@@ -556,7 +556,7 @@ wtsdf$type <- factor(wtsdf$type,levels=c('NDPGreen','Liberal','CPC','Other'),ord
   scale_y_continuous(name="Weight",
                      limits=c(0,11),
                      expand=c(0,0))+
-  scale_x_discrete(name="Region",
+  scale_x_discrete(name="Political affiliation",
                    labels=c('NDP/Green','LPC','CPC','Other'),
   expand=c(0,0))+
   annotate("text",x=c(1,2,3,4),y=10.5,
@@ -564,7 +564,79 @@ wtsdf$type <- factor(wtsdf$type,levels=c('NDPGreen','Liberal','CPC','Other'),ord
            size=6)+
   theme_classic()
 
-ggsave(fig6,p,width=4.5,height=6)  
+ggsave(fig6,p,width=4.5,height=6)
+
+#### Figure 7 ####
+weight_choice="lmc1"
+fig7="Figures_for_paper/fig7.png"
+
+### Canadian OHI ###
+scores <- read.csv("eezCHONE/scores.csv", stringsAsFactors=FALSE) 
+goals <- read.csv("eezCHONE/conf/goals.csv", stringsAsFactors=FALSE)
+
+goals_supra = na.omit(unique(goals$parent))
+wts = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+#goal_labels = gsub('\\n', '\n', with(goals, setNames(name_flower, goal))[names(wts)], fixed=T)
+goal_labels = gsub('\\n', '\n', with(goals, setNames(goal, goal))[names(wts)], fixed=T)
+# get goals for flowers, all and specific to weights
+goals.all = arrange(goals, order_color)[['goal']]
+
+# get colors for aster, based on 10 colors, but extended to all goals. subselect for goals.wts
+cols.goals.all = colorRampPalette(RColorBrewer::brewer.pal(10, 'Spectral'), space='Lab')(length(goals.all))
+names(cols.goals.all) = goals.all
+# region scores    
+x = with(subset(scores, dimension=='score' & region_id==rgn_id & goal %in% names(wts)),
+         setNames(score, goal))[names(wts)]
+
+### weights: yes
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_ENGO_yes.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+goals$weight <- fix_FP_weights(goals,scores,rgn_id)
+
+wts = data.frame(yes=with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal)))
+
+### weights: no
+# set weights
+weights=read.csv('eezCHONE/rawdata.Canada-CHONe2014/weights/weights_ENGO_no.csv')
+#calculate weights, chose either "equal", "importance", "BWrank", "lmc", "lmc1", or "lmc10"
+goals$weight <- reweigh(weights,weight_choice)
+goals$weight <- fix_FP_weights(goals,scores,rgn_id)
+
+wts$no = with(subset(goals, !goal %in% goals_supra, c(goal, weight)), setNames(weight, goal))
+
+#### prepare data for plotting
+wtsdf <- wts %>% 
+  mutate(goal=row.names(.)) %>%
+  gather(type,weight,-goal) %>%
+  group_by(type) %>% 
+  mutate(cum_sum=cumsum(weight)-weight/2) %>% 
+  ungroup()
+
+cols <- cols.goals.all[names(cols.goals.all )%in%row.names(wts)]
+
+wtsdf$goal <- factor(wtsdf$goal,levels=names(cols),ordered = TRUE)
+wtsdf$type <- factor(wtsdf$type,levels=c('yes','no'),ordered = TRUE)
+
+#### plot
+ p <- ggplot(wtsdf,aes(x=type,fill=goal))+
+  geom_bar(aes(weight=weight))+
+  scale_fill_manual(values=as.vector(cols))+
+  geom_text(aes(x=type,y=cum_sum,label=goal))+
+  guides(fill=FALSE)+
+  scale_y_continuous(name="Weight",
+                     limits=c(0,11),
+                     expand=c(0,0))+
+  scale_x_discrete(name="ENGO",
+                   labels=c('member','non-member'),
+  expand=c(0,0))+
+  annotate("text",x=c(1,2),y=10.5,
+           label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
+           size=6)+
+  theme_classic()
+
+ggsave(fig7,p,width=2.5,height=6)  
    
 ```
 ![](`r fig1`)
@@ -578,7 +650,7 @@ ggsave(fig6,p,width=4.5,height=6)
 
 ![](`r fig3`)
 
-**Figure 3**: Canadian modified OHI with different weighting techniques. In all cases subgoals weights are half their parent weights except for Food Provision where subgoals are weighted relative to yield. In equal weighting, for all goals are weights = 1. For the Likert Importance, weights are derived from the relative importance (1-5) question. For the BW Rank and BW DCE Coef, the weights are derived from the answers of best/worst pairings. Thos answers were either simply ranked, or the weights were derived from the DCE model coefficients.  Numbers indicate goal weights. Mariculture (MAR) and Fisheries (FIS) subgoals are part of Food Provision; Aboriginal Needs (AN); Natural Products (NP); Carbon Storage (CS); Coastal Protection (CP); Tourism & Recreation (TR); Livelihoods (LIV) and Economies (ECO) subgoals are part of Coastal Livelihoods; Iconic species (ICO) and Lasting Special Places (LSP) subgoals are part of Iconic Places & Species; Clean Waters (CW); Habitat (HAB) and Species Protection (SPP) subgoals are part of Biodiversity.
+**Figure 3**: Canadian modified OHI with different weighting techniques. In all cases subgoals weights are half their parent weights except for Food Provision where subgoals are weighted relative to yield. In equal weighting, for all goals are weights = 1. For the Likert Importance, weights are derived from the relative importance (1-5) question. For the BW Rank and BW-DCE, the weights are derived from the answers of best/worst pairings. Thos answers were either simply ranked, or the weights were derived from the DCE model coefficients.  Numbers indicate goal weights. Mariculture (MAR) and Fisheries (FIS) subgoals are part of Food Provision; Aboriginal Needs (AN); Natural Products (NP); Carbon Storage (CS); Coastal Protection (CP); Tourism & Recreation (TR); Livelihoods (LIV) and Economies (ECO) subgoals are part of Coastal Livelihoods; Iconic species (ICO) and Lasting Special Places (LSP) subgoals are part of Iconic Places & Species; Clean Waters (CW); Habitat (HAB) and Species Protection (SPP) subgoals are part of Biodiversity.
 
 ![](`r fig4`)
 
@@ -592,6 +664,9 @@ ggsave(fig6,p,width=4.5,height=6)
 
 **Figure 6**: Canadian modified OHI with Best/Worst DCE coefficient weights from each political affiliation. Numbers indicate goal weights. Mariculture (MAR) and Fisheries (FIS) subgoals are part of Food Provision; Aboriginal Needs (AN); Natural Products (NP); Carbon Storage (CS); Coastal Protection (CP); Tourism & Recreation (TR); Livelihoods (LIV) and Economies (ECO) subgoals are part of Coastal Livelihoods; Iconic species (ICO) and Lasting Special Places (LSP) subgoals are part of Iconic Places & Species; Clean Waters (CW); Habitat (HAB) and Species Protection (SPP) subgoals are part of Biodiversity.
 
+![](`r fig7`)
+
+**Figure 7**: Canadian modified OHI with Best/Worst DCE coefficient weights from different environmental engagement categories. Numbers indicate goal weights. Mariculture (MAR) and Fisheries (FIS) subgoals are part of Food Provision; Aboriginal Needs (AN); Natural Products (NP); Carbon Storage (CS); Coastal Protection (CP); Tourism & Recreation (TR); Livelihoods (LIV) and Economies (ECO) subgoals are part of Coastal Livelihoods; Iconic species (ICO) and Lasting Special Places (LSP) subgoals are part of Iconic Places & Species; Clean Waters (CW); Habitat (HAB) and Species Protection (SPP) subgoals are part of Biodiversity.
 
 **Appendix**:
 
