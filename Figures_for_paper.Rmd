@@ -22,7 +22,7 @@ source('PlotFlower_small.R')
 rgn_id <- 218
 
 # calculate all the scores
-calculate_new_scores <- TRUE
+calculate_new_scores <- F
 if(calculate_new_scores){
   # populate CHONe folder and modify layers and functions
   # delete
@@ -49,7 +49,42 @@ if(calculate_new_scores){
   # calculate Canadian scores
   source("eezCHONE/calculate_scores.R")
   #launch_app('~/GitHub/ohi-canada/eezCHONE')
+} else {
+  #create function to alter weights
+  reweigh <- function(w,i){
+    goals$weight[goals$goal=='FP']      = w[,names(w)==i][w$X=="FoodProvision"]
+    goals$weight[goals$goal=='FIS']     = w[,names(w)==i][w$X=="FoodProvision"]/2
+    goals$weight[goals$goal=='MAR']     = w[,names(w)==i][w$X=="FoodProvision"]/2
+    goals$weight[goals$goal=='AN']      = w[,names(w)==i][w$X=="AboriginalNeeds"]
+    goals$weight[goals$goal=='NP']      = w[,names(w)==i][w$X=="NaturalProducts"]
+    goals$weight[goals$goal=='CS']      = w[,names(w)==i][w$X=="CarbonStorage"]
+    goals$weight[goals$goal=='CP']      = w[,names(w)==i][w$X=="CoastalProtection"]
+    goals$weight[goals$goal=='TR']      = w[,names(w)==i][w$X=="TourismRecreation"]
+    goals$weight[goals$goal=='LE']      = w[,names(w)==i][w$X=="CoastalLivelihoods"]
+    goals$weight[goals$goal=='LIV']     = w[,names(w)==i][w$X=="CoastalLivelihoods"]/2
+    goals$weight[goals$goal=='ECO']     = w[,names(w)==i][w$X=="CoastalLivelihoods"]/2
+    goals$weight[goals$goal=='SP']      = w[,names(w)==i][w$X=="IconicPlacesSPecies"]
+    goals$weight[goals$goal=='ICO']     = w[,names(w)==i][w$X=="IconicPlacesSPecies"]/2
+    goals$weight[goals$goal=='LSP']     = w[,names(w)==i][w$X=="IconicPlacesSPecies"]/2
+    goals$weight[goals$goal=='CW']      = w[,names(w)==i][w$X=="CleanWaters"]
+    goals$weight[goals$goal=='BD']      = w[,names(w)==i][w$X=="Biodiversity"]
+    goals$weight[goals$goal=='HAB']     = w[,names(w)==i][w$X=="Biodiversity"]/2
+    goals$weight[goals$goal=='SPP']     = w[,names(w)==i][w$X=="Biodiversity"]/2
+    return(goals$weight)
+  }
+  # fix FP weights function
+  fix_FP_weights <- function(goals,scores,rgn_id){
+    #back calculate subgoal weights from FP
+    FPscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FP'&scores$dimension=='score']
+    FISscore <- scores$score[scores$region_id==rgn_id&scores$goal=='FIS'&scores$dimension=='score']
+    MARscore <- scores$score[scores$region_id==rgn_id&scores$goal=='MAR'&scores$dimension=='score']
+    FISweight <- (FPscore-MARscore)/(FISscore-MARscore)*goals$weight[goals$goal=='FP']
+    goals$weight[goals$goal=='FIS']=FISweight
+    goals$weight[goals$goal=='MAR']=goals$weight[goals$goal=='FP']-FISweight
+    return(goals$weight)
+  }
 }
+
   
 
 # basic flower parameters
@@ -349,6 +384,11 @@ wtsdf$goal <- factor(wtsdf$goal,levels=names(cols),ordered = TRUE)
 wtsdf$type <- factor(wtsdf$type,levels=c('BC','PR','ON','QC','MR'),ordered = TRUE)
 
 #### plot
+raw <- read.csv("../../R/OHI survey results/Latent Gold/userstats_bothlang_usable.csv")
+n <- data.frame(table(raw$sample))
+n
+  
+
  p <- ggplot(wtsdf,aes(x=type,fill=goal))+
   geom_bar(aes(weight=weight))+
   scale_fill_manual(values=as.vector(cols))+
@@ -358,7 +398,11 @@ wtsdf$type <- factor(wtsdf$type,levels=c('BC','PR','ON','QC','MR'),ordered = TRU
                      limits=c(0,11),
                      expand=c(0,0))+
   scale_x_discrete(name="Region",
-                   labels=c("BC", "Prairies", "ON","QC","Atlantic"),
+                   labels=c(paste0("BC\n(n=",n$Freq[1],")"),
+                            paste0("Prairies\n(n=",n$Freq[4],")"),
+                            paste0("ON\n(n=",n$Freq[3],")"),
+                            paste0("QC\n(n=",n$Freq[5],")"),
+                            paste0("Atlantic\n(n=",n$Freq[2],")")),
   expand=c(0,0))+
   annotate("text",x=c(1,2,3,4,5),y=10.5,
            label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
@@ -457,6 +501,10 @@ wtsdf$goal <- factor(wtsdf$goal,levels=names(cols),ordered = TRUE)
 wtsdf$type <- factor(wtsdf$type,levels=c('age20to24','age25to34','age35to44','age45to54','age55to64','age65plus'),ordered = TRUE)
 
 #### plot
+raw <- read.csv("../../R/OHI survey results/Latent Gold/userstats_bothlang_usable.csv")
+n <- data.frame(table(raw$demothree_age))
+n
+
  p <- ggplot(wtsdf,aes(x=type,fill=goal))+
   geom_bar(aes(weight=weight))+
   scale_fill_manual(values=as.vector(cols))+
@@ -466,7 +514,12 @@ wtsdf$type <- factor(wtsdf$type,levels=c('age20to24','age25to34','age35to44','ag
                      limits=c(0,11),
                      expand=c(0,0))+
   scale_x_discrete(name="Respondent age (years)",
-                   labels=c('20 to 24','25 to 34','35 to 44','45 to 54','55 to 64','> 65'),
+                   labels=c(paste0("20 to 24\n(n=",n$Freq[2],")"),
+                            paste0("25 to 34\n(n=",n$Freq[3],")"),
+                            paste0("35 to 44\n(n=",n$Freq[4],")"),
+                            paste0("45 to 54\n(n=",n$Freq[5],")"),
+                            paste0("55 to 64\n(n=",n$Freq[6],")"),
+                            paste0("> 65\n(n=",n$Freq[7],")")),
   expand=c(0,0))+
   annotate("text",x=c(1,2,3,4,5,6),y=10.5,
            label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
@@ -548,6 +601,10 @@ wtsdf$goal <- factor(wtsdf$goal,levels=names(cols),ordered = TRUE)
 wtsdf$type <- factor(wtsdf$type,levels=c('NDPGreen','Liberal','CPC','Other'),ordered = TRUE)
 
 #### plot
+raw <- read.csv("../../R/OHI survey results/Latent Gold/userstats_bothlang_usable.csv")
+n <- data.frame(table(raw$political_party))
+n
+
  p <- ggplot(wtsdf,aes(x=type,fill=goal))+
   geom_bar(aes(weight=weight))+
   scale_fill_manual(values=as.vector(cols))+
@@ -557,7 +614,10 @@ wtsdf$type <- factor(wtsdf$type,levels=c('NDPGreen','Liberal','CPC','Other'),ord
                      limits=c(0,11),
                      expand=c(0,0))+
   scale_x_discrete(name="Political affiliation",
-                   labels=c('NDP/Green','LPC','CPC','Other'),
+                   labels=c(paste0("NDP/Green\n(n=",n$Freq[5]+n$Freq[7],")"),
+                            paste0("LPC\n(n=",n$Freq[6],")"),
+                            paste0("CPC\n(n=",n$Freq[3],")"),
+                            paste0("Other\n(n=",n$Freq[2]+n$Freq[4]+n$Freq[8],")")),
   expand=c(0,0))+
   annotate("text",x=c(1,2,3,4),y=10.5,
            label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
@@ -620,6 +680,10 @@ wtsdf$goal <- factor(wtsdf$goal,levels=names(cols),ordered = TRUE)
 wtsdf$type <- factor(wtsdf$type,levels=c('yes','no'),ordered = TRUE)
 
 #### plot
+raw <- read.csv("../../R/OHI survey results/Latent Gold/userstats_bothlang_usable.csv")
+n <- data.frame(table(raw$envr_org))
+n
+
  p <- ggplot(wtsdf,aes(x=type,fill=goal))+
   geom_bar(aes(weight=weight))+
   scale_fill_manual(values=as.vector(cols))+
@@ -629,7 +693,8 @@ wtsdf$type <- factor(wtsdf$type,levels=c('yes','no'),ordered = TRUE)
                      limits=c(0,11),
                      expand=c(0,0))+
   scale_x_discrete(name="ENGO",
-                   labels=c('member','non-member'),
+                   labels=c(paste0("member\n(n=",n$Freq[4],")"),
+                            paste0("non-member\n(n=",n$Freq[3],")")),
   expand=c(0,0))+
   annotate("text",x=c(1,2),y=10.5,
            label=apply(wts,2, function(w) round(weighted.mean(x, w, na.rm=T))),
